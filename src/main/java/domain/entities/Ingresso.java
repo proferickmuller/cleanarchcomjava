@@ -1,13 +1,19 @@
 package domain.entities;
 
-public class Ingresso {
-    DataEvento dataEvento;
-    Pessoa pessoa;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 
-    public Ingresso(DataEvento data, Pessoa pessoa) {
-        this.dataEvento = data;
-        this.pessoa = pessoa;
-    }
+import java.util.Set;
+
+public class Ingresso {
+    @Future(message = "Data deve ser futura")
+    DataEvento dataEvento;
+    @NotNull(message = "Pessoa não pode ser nulo")
+    Pessoa pessoa;
 
     public DataEvento getDataEvento() {
         return dataEvento;
@@ -23,6 +29,20 @@ public class Ingresso {
 
     public void setPessoa(Pessoa pessoa) {
         this.pessoa = pessoa;
+    }
+
+    public static Ingresso create(DataEvento dataEvento, Pessoa pessoa) {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        var ingresso = new Ingresso();
+        ingresso.setDataEvento(dataEvento);
+        ingresso.setPessoa(pessoa);
+        Set<ConstraintViolation<Ingresso>> violations = validator.validate(ingresso);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.iterator().next().getMessage());
+        }
+        return ingresso;
     }
 
 }
