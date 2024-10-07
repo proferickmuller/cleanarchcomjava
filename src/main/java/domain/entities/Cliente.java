@@ -1,5 +1,6 @@
 package domain.entities;
 
+import domain.exceptions.ClienteInvalidoException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -31,7 +32,7 @@ public class Cliente {
         this.enderecoEmail = enderecoEmail;
     }
 
-    public static Cliente create(Pessoa pessoa, String enderecoEmail) {
+    public static Cliente create(Pessoa pessoa, String enderecoEmail) throws ClienteInvalidoException {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
@@ -40,9 +41,10 @@ public class Cliente {
         cliente.setEnderecoEmail(enderecoEmail);
         Set<ConstraintViolation<Cliente>> violations = validator.validate(cliente);
         if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.iterator().next().getMessage());
+            throw new ClienteInvalidoException(violations.iterator().next().getMessage());
         }
         return cliente;
     }
 
 }
+

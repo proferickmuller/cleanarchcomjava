@@ -1,5 +1,6 @@
 package domain.entities;
 
+import domain.exceptions.EventoInvalidoException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -18,6 +19,8 @@ public class Evento {
     private Integer lotacao;
     @NotNull(message = "Restrito não pode ser nulo")
     private boolean isRestrito;
+
+    private String id = "";
     private final ArrayList<DataEvento> datas = new ArrayList<>();
 
 
@@ -33,40 +36,40 @@ public class Evento {
         return nome;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
     public boolean isRestrito() {
         return isRestrito;
-    }
-
-    public void setRestrito(boolean restrito) {
-        isRestrito = restrito;
     }
 
     public Integer getLotacao() {
         return lotacao;
     }
 
-    public void setLotacao(Integer lotacao) {
-        this.lotacao = lotacao;
+    public String getId() {
+        return id;
     }
 
-    public static Evento create(String nome, Integer lotacao, boolean restrito) {
+    public static Evento create(String nome, Integer lotacao, boolean restrito, String id) throws EventoInvalidoException {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
         var evento = new Evento();
-        evento.setNome(nome);
-        evento.setLotacao(lotacao);
-        evento.setRestrito(restrito);
+        evento.nome = nome;
+        evento.lotacao = lotacao;
+        evento.isRestrito = restrito;
+
+        if (!id.isEmpty()) {
+            evento.id = id;
+        }
 
         Set<ConstraintViolation<Evento>> violations = validator.validate(evento);
         if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.iterator().next().getMessage());
+            throw new EventoInvalidoException(violations.iterator().next().getMessage());
         }
 
         return evento;
+    }
+
+    public static Evento create(String nome, Integer lotacao, boolean restrito) throws EventoInvalidoException {
+        return create(nome, lotacao, restrito, "");
     }
 }

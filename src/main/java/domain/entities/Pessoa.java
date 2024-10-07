@@ -1,16 +1,18 @@
 package domain.entities;
 
+import domain.exceptions.PessoaInvalidaException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.util.Set;
 
 public class Pessoa {
-    @NotNull(message = "Nome não pode ser nulo")
+    @NotEmpty(message = "Nome não pode ser nulo")
     private String nome;
     @NotNull(message = "Documento não pode ser nulo")
     private String documento;
@@ -41,7 +43,7 @@ public class Pessoa {
         this.idade = idade;
     }
 
-    public static Pessoa create(String nome, String documento, Integer idade) {
+    public static Pessoa create(String nome, String documento, Integer idade) throws PessoaInvalidaException {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
@@ -51,7 +53,7 @@ public class Pessoa {
         pessoa.setIdade(idade);
         Set<ConstraintViolation<Pessoa>> violations = validator.validate(pessoa);
         if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.iterator().next().getMessage());
+            throw new PessoaInvalidaException(violations.iterator().next().getMessage());
         }
         return pessoa;
     }
